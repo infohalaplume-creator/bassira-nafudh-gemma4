@@ -184,11 +184,34 @@ Initial (Potentially Rigid) Diagnosis: {initial_dx}
 """
     return context
 
+# ---- Initialize Session State for Fields ----
+if "age" not in st.session_state:
+    st.session_state["age"] = 45
+if "sex" not in st.session_state:
+    st.session_state["sex"] = "Select..."
+if "family_history" not in st.session_state:
+    st.session_state["family_history"] = ""
+if "medications" not in st.session_state:
+    st.session_state["medications"] = ""
+if "dx" not in st.session_state:
+    st.session_state["dx"] = ""
+if "symptoms" not in st.session_state:
+    st.session_state["symptoms"] = ""
+
+def clear_all_fields():
+    """Resets all input fields to their default state."""
+    st.session_state["age"] = 45
+    st.session_state["sex"] = "Select..."
+    st.session_state["family_history"] = ""
+    st.session_state["medications"] = ""
+    st.session_state["dx"] = ""
+    st.session_state["symptoms"] = ""
+
 # ---- User Interface ----
 st.title("🧬 Nafudh Al-Bassira™")
 st.caption("The Cognitive Immune System for the Medical Mind | Powered by Gemma 4 & NeuroStage™")
 
-# Sidebar: The 5 Instincts
+# Sidebar: The 5 Instincts + Clear Button
 with st.sidebar:
     st.header("🧠 The 5 Instincts Active")
     st.markdown("""
@@ -200,6 +223,9 @@ with st.sidebar:
     """)
     st.divider()
     st.markdown("**📚 RAG Status:** PubMed Search is `ACTIVE` (ready to retrieve real-time evidence).")
+    st.divider()
+    # ---- Clear All Fields Button ----
+    st.button("🧹 Clear All Fields", on_click=clear_all_fields, use_container_width=True)
     st.divider()
     st.caption("Built on 'Cybernetics of Cognitive Resilience'\nDr. Hala Tarek Mohamed Othman")
 
@@ -223,18 +249,21 @@ st.divider()
 st.subheader("🏥 Electronic Health Record (EHR) Simulator")
 st.caption("The more data you provide, the more targeted the 'Forbidden Question' becomes.")
 
-# ---- Patient Context Fields ----
+# ---- Patient Context Fields (Using Session State) ----
 col1, col2, col3 = st.columns(3)
 with col1:
-    age = st.number_input("🎂 Age", min_value=0, max_value=120, value=45)
+    age = st.number_input("🎂 Age", min_value=0, max_value=120, value=st.session_state["age"], key="age")
 with col2:
-    sex = st.selectbox("⚧ Sex", ["Select...", "Male", "Female", "Other"])
+    sex = st.selectbox("⚧ Sex", ["Select...", "Male", "Female", "Other"], 
+                       index=["Select...", "Male", "Female", "Other"].index(st.session_state["sex"]) if st.session_state["sex"] in ["Select...", "Male", "Female", "Other"] else 0, 
+                       key="sex")
 with col3:
-    family_history = st.text_input("🧬 Family History (e.g., 'Father had Lymphoma')", placeholder="e.g., Father had Lymphoma")
+    family_history = st.text_input("🧬 Family History (e.g., 'Father had Lymphoma')", 
+                                   value=st.session_state["family_history"], key="family_history")
 
 col4, col5 = st.columns(2)
 with col4:
-    medications = st.text_area("💊 Current Medications", placeholder="e.g., Ibuprofen 400mg daily")
+    medications = st.text_area("💊 Current Medications", value=st.session_state["medications"], key="medications")
 with col5:
     st.divider()
 
@@ -243,9 +272,10 @@ st.subheader("📋 Clinical Encounter")
 
 col_dx, col_sx = st.columns(2)
 with col_dx:
-    initial_dx = st.text_input("🔴 Initial Diagnosis:", placeholder="e.g., Tension Headache", key="dx")
+    initial_dx = st.text_input("🔴 Initial Diagnosis:", value=st.session_state["dx"], key="dx")
 with col_sx:
-    symptoms_input = st.text_area("🩺 Patient Symptoms (separated by commas):", placeholder="e.g., headache, jaw pain, fever, weight loss", key="symptoms")
+    symptoms_input = st.text_area("🩺 Patient Symptoms (separated by commas):", 
+                                  value=st.session_state["symptoms"], key="symptoms")
 
 if st.button("🔮 Convene the 'Governance Theater' & Search PubMed", type="primary", use_container_width=True):
     if initial_dx and symptoms_input:
