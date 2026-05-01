@@ -19,33 +19,83 @@ MODEL_NAME = "gemma-2-2b-it"
 def load_model():
     return genai.GenerativeModel(MODEL_NAME)
 
-# ---- The "Wise Elder" Knowledge Base (Breaks AI Rigidity) ----
-WISE_ELDER_KNOWLEDGE = {
-    "headache": "Giant Cell Arteritis (Temporal Arteritis)",
-    "fatigue": "Lymphoma (Hodgkin's or Non-Hodgkin's)",
-    "back pain": "Multiple Myeloma",
-    "chest pain": "Aortic Dissection",
-    "fever": "Endocarditis",
-    "cough": "Tuberculosis",
-    "dizziness": "Vertebral Artery Dissection",
-    "abdominal pain": "Mesenteric Ischemia",
-    "weight loss": "Pancreatic Cancer",
-    "night sweats": "Tuberculosis or Lymphoma",
-    "jaw pain": "Giant Cell Arteritis",
-    "vision loss": "Giant Cell Arteritis",
-    "confusion": "Meningitis or Encephalitis",
-    "seizure": "Brain Tumor or Paraneoplastic Syndrome"
-}
-
-def get_wise_elder_advice(symptoms_str: str, initial_dx: str) -> str:
-    """The Wise Elder Guardian: Searches the knowledge base for a relevant rare disease."""
+# ---- The "Wise Elder" 2.0: Context-Aware Inference Engine ----
+def get_wise_elder_advice(symptoms_str: str, initial_dx: str, age: int = 0, sex: str = "") -> str:
+    """
+    The Wise Elder Guardian 2.0: Context-Aware Inference Engine.
+    Analyzes symptom PATTERNS, not just keywords.
+    """
     symptoms_lower = symptoms_str.lower()
-    for key, disease in WISE_ELDER_KNOWLEDGE.items():
-        if key in symptoms_lower and key not in initial_dx.lower():
+    
+    # ---- Giant Cell Arteritis Pattern ----
+    gca_score = 0
+    if age > 50: gca_score += 2
+    if "headache" in symptoms_lower: gca_score += 1
+    if "jaw pain" in symptoms_lower or "jaw" in symptoms_lower: gca_score += 2
+    if "vision" in symptoms_lower or "blind" in symptoms_lower: gca_score += 2
+    if "fever" in symptoms_lower: gca_score += 1
+    if "weight loss" in symptoms_lower: gca_score += 1
+    if gca_score >= 3:
+        return "Giant Cell Arteritis (Temporal Arteritis) - Medical Emergency: Risk of Blindness"
+    
+    # ---- Lymphoma Pattern ----
+    lymphoma_score = 0
+    if "night sweats" in symptoms_lower: lymphoma_score += 2
+    if "weight loss" in symptoms_lower: lymphoma_score += 2
+    if "fatigue" in symptoms_lower: lymphoma_score += 1
+    if "fever" in symptoms_lower: lymphoma_score += 1
+    if "lymph" in symptoms_lower: lymphoma_score += 3
+    if lymphoma_score >= 3:
+        return "Lymphoma (Hodgkin's or Non-Hodgkin's)"
+    
+    # ---- Multiple Myeloma Pattern ----
+    myeloma_score = 0
+    if age > 50: myeloma_score += 2
+    if "back pain" in symptoms_lower: myeloma_score += 2
+    if "bone" in symptoms_lower: myeloma_score += 2
+    if "weight loss" in symptoms_lower: myeloma_score += 1
+    if "fatigue" in symptoms_lower: myeloma_score += 1
+    if myeloma_score >= 3:
+        return "Multiple Myeloma"
+    
+    # ---- Endocarditis Pattern ----
+    endo_score = 0
+    if "fever" in symptoms_lower: endo_score += 2
+    if "heart" in symptoms_lower or "murmur" in symptoms_lower: endo_score += 2
+    if "iv drug" in symptoms_lower: endo_score += 3
+    if "night sweats" in symptoms_lower: endo_score += 1
+    if "weight loss" in symptoms_lower: endo_score += 1
+    if endo_score >= 3:
+        return "Endocarditis"
+    
+    # ---- Tuberculosis Pattern ----
+    tb_score = 0
+    if "cough" in symptoms_lower: tb_score += 2
+    if "night sweats" in symptoms_lower: tb_score += 2
+    if "weight loss" in symptoms_lower: tb_score += 2
+    if "fever" in symptoms_lower: tb_score += 1
+    if "blood" in symptoms_lower: tb_score += 2
+    if tb_score >= 3:
+        return "Tuberculosis"
+    
+    # ---- Fallback: Keyword-based ----
+    keyword_map = {
+        "headache": "Giant Cell Arteritis",
+        "jaw": "Giant Cell Arteritis",
+        "fatigue": "Lymphoma or Adrenal Insufficiency",
+        "back pain": "Multiple Myeloma or Spinal Metastasis",
+        "chest pain": "Aortic Dissection",
+        "dizziness": "Vertebral Artery Dissection",
+        "seizure": "Brain Tumor or Paraneoplastic Syndrome",
+        "confusion": "Meningitis or Encephalitis"
+    }
+    for key, disease in keyword_map.items():
+        if key in symptoms_lower:
             return disease
-    return "a rare and dangerous condition"
+    
+    return "a rare and dangerous condition that requires immediate investigation"
 
-# ---- The "Audit Instinct": Calculates Stupidity Index (StI) from certainty words ----
+# ---- The "Audit Instinct": Calculates Stupidity Index (StI) ----
 def calculate_stupidity_index(text: str) -> float:
     certainty_words = ["obvious", "clearly", "no doubt", "classic", "definitely", "always", "never", "absolutely"]
     words = text.lower().split()
@@ -53,7 +103,7 @@ def calculate_stupidity_index(text: str) -> float:
     return min(count * 0.2, 1.0)
 
 # ---- The "Bravery Instinct": Governance Theater ----
-def governance_theater(model, prompt: str, symptoms_str: str, initial_dx: str) -> tuple:
+def governance_theater(model, prompt: str, symptoms_str: str, initial_dx: str, age: int = 0, sex: str = "") -> tuple:
     """Runs the prompt 3 times. If the model is rigid, calls the Wise Elder."""
     answers = []
     for _ in range(3):
@@ -70,18 +120,14 @@ def governance_theater(model, prompt: str, symptoms_str: str, initial_dx: str) -
     
     if len(unique_answers) <= 1 or ("rare" in best_answer.lower() and "condition" in best_answer.lower()):
         rigidity_warning = "⚠️ **Model Rigidity Detected:** The AI is repeating itself. Our 'Wise Elder' Guardian is overriding this with an evidence-based alternative."
-        wise_disease = get_wise_elder_advice(symptoms_str, initial_dx)
+        wise_disease = get_wise_elder_advice(symptoms_str, initial_dx, age, sex)
         best_answer = f"What if this is not {initial_dx}, but {wise_disease}?"
     
     return best_answer, rigidity_warning
 
-# ---- The "RAG Instinct": PubMed Search (Ready for API Key) ----
+# ---- The "RAG Instinct": PubMed Search ----
 def search_pubmed(query: str, retmax: int = 3) -> list:
-    """
-    Searches PubMed for recent articles related to the symptoms.
-    NOTE: This is a live API call. If it fails, it returns an empty list.
-    To activate, simply ensure the app has internet access.
-    """
+    """Searches PubMed for recent articles related to the symptoms."""
     base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
     search_url = f"{base_url}/esearch.fcgi?db=pubmed&term={query}&retmax={retmax}&sort=relevance"
     
@@ -170,7 +216,7 @@ with st.expander("🛡️ The Treatment: 'The Governance Theater' + 'Live RAG'",
     **We don't use a single AI. We use a panel of 3 AI Guardians + Real-Time Medical Literature.**
     `Nafudh` runs **3 separate "Forbidden Questions"** in parallel via our **"Governance Theater"**.
     It also searches **PubMed** for the latest relevant case reports to ground its challenge in evidence.
-    If the AI becomes "rigid", our **"Wise Elder"** Guardian overrides it.
+    If the AI becomes "rigid", our **"Wise Elder 2.0"** (Context-Aware Inference Engine) overrides it.
     """)
 
 st.divider()
@@ -212,7 +258,7 @@ if st.button("🔮 Convene the 'Governance Theater' & Search PubMed", type="prim
         sti_score += calculate_stupidity_index(medications)
         sti_score = min(sti_score, 1.0)
         
-        # ---- 2. Build Clinical Context (EHR Simulator) ----
+        # ---- 2. Build Clinical Context ----
         clinical_context = build_clinical_context(
             initial_dx, symptoms_input, age, sex, family_history, medications
         )
@@ -222,7 +268,7 @@ if st.button("🔮 Convene the 'Governance Theater' & Search PubMed", type="prim
         with st.spinner("📚 Searching PubMed for the latest relevant evidence..."):
             pubmed_data = search_pubmed(f"{initial_dx} {symptoms_input} rare differential")
         
-        # ---- 4. Build the Powerful Contextual Prompt ----
+        # ---- 4. Build the Contextual Prompt ----
         pubmed_text = ""
         if pubmed_data:
             pubmed_text = "**Recent PubMed Evidence:**\n" + "\n".join([f"- {title}" for title in pubmed_data])
@@ -256,7 +302,7 @@ Now give your answer:"""
         # ---- 6. Activate "Bravery Instinct" (Governance Theater) ----
         with st.spinner("🧬 The 3 Guardians are debating with the PubMed evidence..."):
             model = load_model()
-            forbidden_q, rigidity_warning = governance_theater(model, prompt, symptoms_input, initial_dx)
+            forbidden_q, rigidity_warning = governance_theater(model, prompt, symptoms_input, initial_dx, age, sex)
         
         # ---- 7. Display Results ----
         st.divider()
@@ -274,10 +320,16 @@ Now give your answer:"""
             st.metric("PubMed Evidence", f"{len(pubmed_data)} articles", "Live RAG Active" if pubmed_data else "No Data")
         
         # Patient Context Card
+        risk_summary = []
+        if age > 50: risk_summary.append("Advanced Age")
+        if "female" in sex.lower(): risk_summary.append("Autoimmune Risk")
+        if "male" in sex.lower(): risk_summary.append("Gender-Specific Malignancy Risk")
+        if age < 18: risk_summary.append("Pediatric Differential")
+        
         st.info(f"""
         **🏥 Patient Context Card:**
         - Age: {age} | Sex: {sex}
-        - Risk Factors: {'Advanced Age, ' if age > 50 else ''}{'Autoimmune Risk, ' if 'female' in sex.lower() else ''}{'Pediatric Differential, ' if age < 18 else ''}
+        - Risk Factors: {', '.join(risk_summary) if risk_summary else 'None identified'}
         - Family History: {family_history if family_history else 'None'}
         """)
         
