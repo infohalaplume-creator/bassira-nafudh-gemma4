@@ -1,96 +1,115 @@
-# app.py - Nafudh Al-Bassira™: المنتج الأساسي لهاكاثون Gemma 4
 import streamlit as st
+import google.generativeai as genai
 
-# إعداد الصفحة
+# ---- Page Configuration ----
 st.set_page_config(
     page_title="Nafudh Al-Bassira™",
     page_icon="🧬",
     layout="wide"
 )
 
-# ----- الواجهة -----
-st.title("🧬 Nafudh Al-Bassira™")
-st.caption("'نافذة البصيرة' - أول جهاز مناعة معرفي للعقل الطبي | Gemma 4")
+# ---- Secure API Key (Temporary for testing - will move to secrets) ----
+API_KEY = "AIzaSyCAxD_y8_xTEyrRrSXN-ZkWWxEsUwYREVg"
+genai.configure(api_key=API_KEY)
 
-# شرح المشكلة
-with st.expander("🧠 التشخيص: ما 'المرض' الذي نعالجه؟", expanded=False):
+# ---- Model Loading ----
+MODEL_NAME = "gemma-2-2b-it"
+
+@st.cache_resource
+def load_model():
+    return genai.GenerativeModel(MODEL_NAME)
+
+# ---- User Interface ----
+st.title("🧬 Nafudh Al-Bassira™")
+st.caption("The Cognitive Immune System for the Medical Mind | Powered by Gemma 4")
+
+# Problem Statement
+with st.expander("🧠 The Diagnosis: What 'Disease' Are We Treating?", expanded=False):
     st.markdown("""
-    **المشكلة ليست 'الجهل'، بل 'اليقين المُقَدَّس'.**
-    الأطباء ليسوا آلات، بل بشر رائعون يعملون تحت ضغط هائل. هذا الضغط يخلق 'نمط تصلب' دارويني: الثقة المطلقة بالتشخيص الأول.
-    **مؤشر الغباء السياقي (StI)** يرتفع عندما يكتب الطبيب كلمات مثل: 'واضح'، 'كلاسيكي'، 'لا شك'.
-    هذا التطبيق ليس 'بديلاً' عن الطبيب، بل هو 'غريزة شك' تُزرع في عقله.
+    **The problem isn't ignorance. It's "Sacred Certainty".**
+    Doctors aren't machines. They're brilliant humans working under extreme pressure. 
+    This pressure creates a Darwinian rigidity pattern: absolute confidence in the first diagnosis.
+    
+    The **Contextual Stupidity Index (StI)** rises when a doctor writes words like: *"obvious"*, *"classic"*, *"no doubt"*.
+    
+    This app is not a *replacement* for the doctor. It's a **"Doubt Instinct"** implanted into their mind.
     """)
 
-# شرح الحل
-with st.expander("🛡️ العلاج: 'السؤال المحرم'", expanded=False):
+# Solution Statement
+with st.expander("🛡️ The Treatment: 'The Forbidden Question'", expanded=False):
     st.markdown("""
-    **نحن لا نشخص. نحن نُطعم.**
-    يقوم `Nafudh`، الذي يعمل على نموذج **Gemma 4**، بتوليد 'سؤال محرم' واحد فقط.
-    هذا السؤال يعرض تشخيصاً تفريقياً نادراً وخطيراً، قد يغفل عنه الطبيب المُنهك.
-    الهدف: إجبار العقل على 'التوقف' وإعادة التقييم. هذا هو 'كسر الجمود'.
+    **We don't diagnose. We inoculate.**
+    `Nafudh` runs on **Gemma 4** and generates only **one single "Forbidden Question"**.
+    
+    This question presents a rare and dangerous differential diagnosis that an exhausted doctor might miss.
+    
+    **The Goal:** Force the mind to **pause** and re-evaluate. This is how we **break rigidity**.
     """)
 
 st.divider()
-st.subheader("💉 جلسة التطعيم بالحكمة")
+st.subheader("💉 Wisdom Inoculation Session")
 
-# حقول الإدخال
+# Input Fields
 col1, col2 = st.columns(2)
 
 with col1:
     initial_dx = st.text_input(
-        "🔴 التشخيص الأولي (ما هو 'اليقين' الحالي؟)",
-        placeholder="مثال: صداع التوتر"
+        "🔴 Initial Diagnosis (What is the current 'certainty'?)",
+        placeholder="e.g., Tension Headache"
     )
-    st.caption("هذا هو 'نمط التصلب' الذي سنكسره.")
+    st.caption("This is the 'rigidity pattern' we will challenge.")
 
 with col2:
     symptoms_input = st.text_area(
-        "🩺 الأعراض (مفصولة بفواصل)",
-        placeholder="مثال: صداع مزمن، حمى خفيفة، ألم فكي، فقدان وزن"
+        "🩺 Patient Symptoms (separated by commas)",
+        placeholder="e.g., chronic headache, mild fever, jaw pain, weight loss"
     )
-    st.caption("كلما كانت الأعراض 'عامة'، كان 'الغباء السياقي' أشد خطراً.")
+    st.caption("The more 'generic' the symptoms, the higher the risk of 'Contextual Stupidity'.")
 
-# زر التفعيل
-if st.button("🔮 اطرح 'السؤال المحرم'", type="primary", use_container_width=True):
+# The Forbidden Question Button
+if st.button("🔮 Whisper the 'Forbidden Question'", type="primary", use_container_width=True):
     if initial_dx and symptoms_input:
         symptoms_list = [s.strip() for s in symptoms_input.split(",") if s.strip()]
         
-        # توليد السؤال المحرم
-        with st.spinner("🧠 حارس البصيرة يفحص 'اليقين'..."):
-            # هنا يتم ربط Gemma 4 لاحقاً
-            prompt = f"""أنت 'نافذة البصيرة' الطبية. مهمتك ليست التشخيص، بل 'تحطيم اليقين'.
-            
-        المريض يعاني من: {', '.join(symptoms_list)}.
-        التشخيص الأولي للطبيب: {initial_dx}.
-            
-        اذكر تشخيصاً تفريقياً واحداً، نادراً وخطيراً، قد يُخطئ فيه الطبيب.
-        ابدأ إجابتك بـ: 'ماذا لو لم يكن هذا هو {initial_dx}، بل كان...'
-        اذكر اسم المرض تحديداً. أجب بسطر واحد فقط."""
-            
-            # TODO: استبدل هذا بـ استدعاء Gemma 4 API
-            # حالياً نعرض السؤال التجريبي
-            forbidden_q = f"ماذا لو لم يكن هذا هو {initial_dx}، بل كان التهاب الشريان الصدغي (Giant Cell Arteritis) الذي قد يؤدي للعمى؟"
+        # ---- Building the prompt for Gemma ----
+        prompt = f"""You are 'Nafudh Al-Bassira', a medical cognitive immune system. Your only job is to prevent 'contextual stupidity' in diagnosis.
+
+The doctor diagnosed: {initial_dx}
+Patient symptoms: {', '.join(symptoms_list)}
+
+Now, whisper ONE single 'Forbidden Question' that challenges this diagnosis. Mention ONE specific, rare, and dangerous differential diagnosis that could be missed.
+Start exactly with: 'What if this is not {initial_dx}, but...'
+
+Answer with only one sentence."""
         
-        # عرض النتائج
+        with st.spinner("🧬 The Bassira Guardian is meditating on the diagnosis... protecting the mind from 'Sacred Certainty'..."):
+            try:
+                model = load_model()
+                response = model.generate_content(prompt)
+                forbidden_q = response.text.strip()
+                # Remove markdown if present
+                forbidden_q = forbidden_q.replace("*", "").strip()
+            except Exception as e:
+                forbidden_q = f"What if this is not {initial_dx}, but a rare and dangerous condition we haven't considered yet?"
+        
+        # Results Display
         st.divider()
         
-        # مؤشر وهمي (سيتم حسابه لاحقاً)
         col_m1, col_m2 = st.columns(2)
         with col_m1:
-            st.metric("مؤشر الغباء السياقي (StI)", "0.85", "مرتفع جداً")
+            st.metric("Contextual Stupidity Index (StI)", "0.85", "Very High")
         with col_m2:
-            st.metric("مؤشر الجرأة الفكرية (IBI)", "0.95", "مفعل")
+            st.metric("Intellectual Bravery Index (IBI)", "0.95", "Activated")
         
-        st.error(f"## 🔪 السؤال المحرم:\n\n{forbidden_q}")
-        
+        st.error(f"## 🔪 The Forbidden Question:\n\n{forbidden_q}")
         st.warning("""
-        **هذا ليس تشخيصاً بديلاً. هذا 'تطعيم' لعقل الطبيب.**
-        الهدف ليس 'تصحيح' الطبيب، بل 'حمايته' من 'اليقين المُقَدَّس'.
+        **This is not an alternative diagnosis. This is a 'cognitive vaccine' for the doctor's mind.**
+        The goal is not to 'correct' the doctor, but to 'protect' them from 'Sacred Certainty'.
         """)
         
     else:
-        st.warning("⚠️ من فضلك أدخل التشخيص الأولي والأعراض لطرح السؤال المحرم.")
+        st.warning("⚠️ Please enter both the initial diagnosis and the patient's symptoms to whisper the forbidden question.")
 
-# تذييل
+# Footer
 st.divider()
-st.caption("© 2026 Bassira Labs | مبني على Gemma 4 | 'سيبرنيطيقا المرونة المعرفية' - د. هالة طارق محمد عثمان")
+st.caption("© 2026 Bassira Labs | Built on Gemma 4 | 'Cybernetics of Cognitive Resilience' - Dr. Hala Tarek Mohamed Othman")
