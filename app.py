@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ---- Secure API Key (Temporary for testing - will move to secrets) ----
+# ---- API Key Configuration ----
 API_KEY = "AIzaSyCAxD_y8_xTEyrRrSXN-ZkWWxEsUwYREVg"
 genai.configure(api_key=API_KEY)
 
@@ -71,16 +71,17 @@ if st.button("🔮 Whisper the 'Forbidden Question'", type="primary", use_contai
     if initial_dx and symptoms_input:
         symptoms_list = [s.strip() for s in symptoms_input.split(",") if s.strip()]
         
-        # ---- Building the prompt for Gemma ----
-        prompt = f"""You are 'Nafudh Al-Bassira', a medical cognitive immune system. Your only job is to prevent 'contextual stupidity' in diagnosis.
+        # ---- BRAVE PROMPT (The Inoculation Engine) ----
+        prompt = f"""You are 'Nafudh Al-Bassira', a medical cognitive immune system. You are famous for your bravery in challenging doctors' sacred certainties.
 
-The doctor diagnosed: {initial_dx}
+The doctor is absolutely certain the diagnosis is: {initial_dx}
 Patient symptoms: {', '.join(symptoms_list)}
 
-Now, whisper ONE single 'Forbidden Question' that challenges this diagnosis. Mention ONE specific, rare, and dangerous differential diagnosis that could be missed.
-Start exactly with: 'What if this is not {initial_dx}, but...'
+Your task is to be BRAVE and SPECIFIC. Do not be vague. Do not say 'a rare condition'. Name the EXACT name of ONE real, specific, rare and dangerous differential diagnosis that the doctor might be missing.
 
-Answer with only one sentence."""
+Whisper your forbidden question starting with: 'What if this is not {initial_dx}, but [EXACT DISEASE NAME]...'
+
+Answer with only one sentence. Be bold."""
         
         with st.spinner("🧬 The Bassira Guardian is meditating on the diagnosis... protecting the mind from 'Sacred Certainty'..."):
             try:
