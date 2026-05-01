@@ -1,20 +1,29 @@
 import streamlit as st
 import google.generativeai as genai
 
-st.set_page_config(page_title="Nafudh Al-Bassira™", page_icon="🧬", layout="wide")
+# ---- Page Configuration ----
+st.set_page_config(
+    page_title="Nafudh Al-Bassira™",
+    page_icon="🧬",
+    layout="wide"
+)
 
-API_KEY = "AIzaSyCAxD_y8_xTEyrRrSXN-ZkWWxEsUwYREVg"
+# ---- Secure API Key (Loaded from Streamlit Secrets) ----
+API_KEY = st.secrets["API_KEY"]
 genai.configure(api_key=API_KEY)
 
+# ---- Model Loading ----
 MODEL_NAME = "gemma-2-2b-it"
 
 @st.cache_resource
 def load_model():
     return genai.GenerativeModel(MODEL_NAME)
 
+# ---- User Interface ----
 st.title("🧬 Nafudh Al-Bassira™")
 st.caption("The Cognitive Immune System for the Medical Mind | Powered by Gemma 4")
 
+# Problem Statement
 with st.expander("🧠 The Diagnosis: What 'Disease' Are We Treating?", expanded=False):
     st.markdown("""
     **The problem isn't ignorance. It's "Sacred Certainty".**
@@ -22,6 +31,7 @@ with st.expander("🧠 The Diagnosis: What 'Disease' Are We Treating?", expanded
     This pressure creates a Darwinian rigidity pattern: absolute confidence in the first diagnosis.
     """)
 
+# Solution Statement
 with st.expander("🛡️ The Treatment: 'The Forbidden Question'", expanded=False):
     st.markdown("""
     **We don't diagnose. We inoculate.**
@@ -41,7 +51,7 @@ if st.button("🔮 Whisper the 'Forbidden Question'", type="primary", use_contai
     if initial_dx and symptoms_input:
         symptoms_list = [s.strip() for s in symptoms_input.split(",") if s.strip()]
         
-        # ---- الموجه الجريء (حتى للنموذج الصغير) ----
+        # ---- الموجه الجريء ----
         prompt = f"""Your job is to list ONE rare disease that matches these symptoms.
 
 Symptoms: {', '.join(symptoms_list)}
